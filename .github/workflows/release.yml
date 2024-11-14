@@ -37,8 +37,11 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: npx semantic-release
 
-      - name: Publish to VS Code Marketplace
-        if: ${{ success() }}
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx vsce publish -p $VSCE_PAT
+      - name: Package VSIX
+        run: npx vsce package
+
+      - name: Upload VSIX as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vsix-package
+          path: "*.vsix"
