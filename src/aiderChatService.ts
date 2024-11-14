@@ -10,13 +10,13 @@ export default class AiderChatService {
 
   port: number = 0;
 
-  onStarted: () => void = () => {};
-  onError: (error: Error) => void = () => {};
+  onStarted: () => void = () => { };
+  onError: (error: Error) => void = () => { };
 
   constructor(
     private context: vscode.ExtensionContext,
     private outputChannel: vscode.LogOutputChannel,
-  ) {}
+  ) { }
 
   async start() {
     this.outputChannel.info('Starting aider-chat service...');
@@ -29,10 +29,19 @@ export default class AiderChatService {
 
     const config = vscode.workspace.getConfiguration('aider-composer');
     const pythonPath = config.get('pythonPath') as string;
-    const pythonPathFile = path.join(
-      pythonPath,
-      process.platform === 'win32' ? 'python.exe' : 'python',
-    );
+    let pythonPathFile;
+
+    if (process.platform === 'win32') {
+      pythonPathFile = path.join(pythonPath, 'python.exe');
+    } else {
+      try {
+        pythonPathFile = path.join(pythonPath, 'python3');
+        await fsPromise.access(pythonPathFile, fsPromise.constants.X_OK);
+      } catch (e) {
+        pythonPathFile = path.join(pythonPath, 'python');
+      }
+    }
+
     if (!pythonPath) {
       this.outputChannel.info(
         'Python path is not set, skip starting aider-chat service.',
